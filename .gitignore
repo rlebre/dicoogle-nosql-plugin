@@ -45,7 +45,7 @@ Temporary Items
 
 
 ## IntelliJ
-
+.idea/*
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
