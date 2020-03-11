@@ -1,0 +1,5 @@
+Para introduzir todos os dados na base de dados foi usado o seguinte comando
+
+dcmsend -aec DICOOGLE-STORAGE localhost 6666 $(find <dir> -name '*.dcm' -print)
+
+Sendo que <dir> deve ser substituido pelo diretorio que contém as imagens
