@@ -26,6 +26,13 @@ import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
 
+/**
+ * Example of an indexer plugin.
+ *
+ * @author Rui Lebre - <ruilebre@ua.pt>
+ * @author Ana Almeida
+ * @author Francisco Oliveira
+ */
 public class DatabaseInterface {
 
     private DB db;
