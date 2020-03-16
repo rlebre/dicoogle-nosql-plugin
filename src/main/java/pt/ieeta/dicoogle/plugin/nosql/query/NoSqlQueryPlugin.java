@@ -1,8 +1,8 @@
-package pt.ieeta.dicoogle.plugin.sample.query;
+package pt.ieeta.dicoogle.plugin.nosql.query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ieeta.dicoogle.plugin.sample.database.DatabaseInterface;
+import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
 import pt.ua.dicoogle.sdk.QueryInterface;
 import pt.ua.dicoogle.sdk.datastructs.SearchResult;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
@@ -21,14 +21,14 @@ import java.util.UUID;
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
-public class SampleQueryPlugin implements QueryInterface {
-    private static final Logger logger = LoggerFactory.getLogger(SampleQueryPlugin.class);
+public class NoSqlQueryPlugin implements QueryInterface {
+    private static final Logger logger = LoggerFactory.getLogger(NoSqlQueryPlugin.class);
     private boolean enabled;
     private ConfigurationHolder settings;
 
     private DatabaseInterface databaseInterface;
 
-    public SampleQueryPlugin(DatabaseInterface databaseInterface) {
+    public NoSqlQueryPlugin(DatabaseInterface databaseInterface) {
         this.enabled = true;
         this.databaseInterface = databaseInterface;
     }

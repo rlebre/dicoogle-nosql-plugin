@@ -1,11 +1,11 @@
-package pt.ieeta.dicoogle.plugin.sample.storage;
+package pt.ieeta.dicoogle.plugin.nosql.storage;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.DicomOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ieeta.dicoogle.plugin.sample.database.DatabaseInterface;
+import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
 import pt.ua.dicoogle.sdk.StorageInputStream;
 import pt.ua.dicoogle.sdk.StorageInterface;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
@@ -24,8 +24,8 @@ import java.util.*;
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
-public class SampleStoragePlugin implements StorageInterface {
-    private static final Logger logger = LoggerFactory.getLogger(SampleStoragePlugin.class);
+public class NoSqlStoragePlugin implements StorageInterface {
+    private static final Logger logger = LoggerFactory.getLogger(NoSqlStoragePlugin.class);
 
     private final Map<String, ByteArrayOutputStream> mem = new HashMap<>();
     private boolean enabled = true;
@@ -33,7 +33,7 @@ public class SampleStoragePlugin implements StorageInterface {
 
     private DatabaseInterface databaseInterface = new DatabaseInterface("localhost", 27017, "DicoogleDatabase", "DicoogleObjs");
 
-    public SampleStoragePlugin(DatabaseInterface databaseInterface) {
+    public NoSqlStoragePlugin(DatabaseInterface databaseInterface) {
         this.databaseInterface = databaseInterface;
     }
 

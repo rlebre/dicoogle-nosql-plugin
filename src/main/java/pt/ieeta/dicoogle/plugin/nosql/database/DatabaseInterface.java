@@ -1,4 +1,4 @@
-package pt.ieeta.dicoogle.plugin.sample.database;
+package pt.ieeta.dicoogle.plugin.nosql.database;
 
 import com.mongodb.Block;
 import com.mongodb.DB;

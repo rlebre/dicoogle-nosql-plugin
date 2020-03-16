@@ -1,4 +1,4 @@
-package pt.ieeta.dicoogle.plugin.sample.index;
+package pt.ieeta.dicoogle.plugin.nosql.index;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -23,12 +23,12 @@ import java.net.URI;
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
-public class SampleJsonPlugin implements IndexerInterface {
-    private static final Logger logger = LoggerFactory.getLogger(SampleJsonPlugin.class);
+public class NoSqlJsonPlugin implements IndexerInterface {
+    private static final Logger logger = LoggerFactory.getLogger(NoSqlJsonPlugin.class);
     private boolean enabled;
     private ConfigurationHolder settings;
 
-    public SampleJsonPlugin() {
+    public NoSqlJsonPlugin() {
         this.enabled = true;
     }
 

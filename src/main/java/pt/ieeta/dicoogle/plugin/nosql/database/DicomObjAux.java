@@ -1,4 +1,4 @@
-package pt.ieeta.dicoogle.plugin.sample.database;
+package pt.ieeta.dicoogle.plugin.nosql.database;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;

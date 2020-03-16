@@ -1,13 +1,13 @@
-package pt.ieeta.dicoogle.plugin.sample;
+package pt.ieeta.dicoogle.plugin.nosql;
 
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ieeta.dicoogle.plugin.sample.database.DatabaseInterface;
-import pt.ieeta.dicoogle.plugin.sample.index.SampleJsonPlugin;
-import pt.ieeta.dicoogle.plugin.sample.query.SampleQueryPlugin;
-import pt.ieeta.dicoogle.plugin.sample.storage.SampleStoragePlugin;
+import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
+import pt.ieeta.dicoogle.plugin.nosql.index.NoSqlJsonPlugin;
+import pt.ieeta.dicoogle.plugin.nosql.query.NoSqlQueryPlugin;
+import pt.ieeta.dicoogle.plugin.nosql.storage.NoSqlStoragePlugin;
 import pt.ua.dicoogle.sdk.*;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
 
@@ -23,26 +23,26 @@ import java.util.*;
  * @author Francisco Oliveira
  */
 @PluginImplementation
-public class SamplePluginSet implements PluginSet {
-    private static final Logger logger = LoggerFactory.getLogger(SamplePluginSet.class);
+public class NoSqlPluginSet implements PluginSet {
+    private static final Logger logger = LoggerFactory.getLogger(NoSqlPluginSet.class);
 
-    private final SampleQueryPlugin query;
-    private final SampleStoragePlugin storage;
-    private final SampleJsonPlugin json;
+    private final NoSqlQueryPlugin query;
+    private final NoSqlStoragePlugin storage;
+    private final NoSqlJsonPlugin json;
 
     private ConfigurationHolder settings;
 
     private DatabaseInterface databaseInterface = new DatabaseInterface("localhost", 27017, "DicoogleDatabase", "DicoogleObjs");
 
 
-    public SamplePluginSet() {
-        logger.info("Initializing Sample Plugin Set");
+    public NoSqlPluginSet() {
+        logger.info("Initializing NoSql Plugin Set");
 
-        this.query = new SampleQueryPlugin(databaseInterface);
-        this.storage = new SampleStoragePlugin(databaseInterface);
-        this.json = new SampleJsonPlugin();
+        this.query = new NoSqlQueryPlugin(databaseInterface);
+        this.storage = new NoSqlStoragePlugin(databaseInterface);
+        this.json = new NoSqlJsonPlugin();
 
-        logger.info("Sample Plugin Set is ready");
+        logger.info("NoSql Plugin Set is ready");
     }
 
     @Override
@@ -59,7 +59,7 @@ public class SamplePluginSet implements PluginSet {
 
     @Override
     public String getName() {
-        return "Sample Plugin Set";
+        return "NoSql Plugin Set";
     }
 
     @Override
