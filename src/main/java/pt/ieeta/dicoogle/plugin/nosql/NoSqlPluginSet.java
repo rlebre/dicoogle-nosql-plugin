@@ -1,6 +1,7 @@
 package pt.ieeta.dicoogle.plugin.nosql;
 
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import org.apache.commons.configuration.XMLConfiguration;
 import org.restlet.resource.ServerResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,7 @@ import java.util.*;
 /**
  * The main plugin set.
  *
- * This is the entry point for all plugins.
+ * This is the entry point for the storage, index and query distributed NoSQL plugins
  *
  * @author Rui Lebre - <ruilebre@ua.pt>
  * @author Ana Almeida
@@ -32,12 +33,13 @@ public class NoSqlPluginSet implements PluginSet {
 
     private ConfigurationHolder settings;
 
-    private DatabaseInterface databaseInterface = new DatabaseInterface("localhost", 27017, "DicoogleDatabase", "DicoogleObjs");
+    private DatabaseInterface databaseInterface;
 
 
     public NoSqlPluginSet() {
         logger.info("Initializing NoSql Plugin Set");
 
+        this.databaseInterface = new DatabaseInterface("localhost", 27017, "DicoogleDatabase", "DicoogleObjs");
         this.query = new NoSqlQueryPlugin(databaseInterface);
         this.storage = new NoSqlStoragePlugin(databaseInterface);
         this.json = new NoSqlJsonPlugin();
@@ -89,6 +91,30 @@ public class NoSqlPluginSet implements PluginSet {
     @Override
     public void setSettings(ConfigurationHolder xmlSettings) {
         this.settings = xmlSettings;
+        XMLConfiguration cnf = xmlSettings.getConfiguration();
+
+        cnf.setThrowExceptionOnMissing(true);
+
+        String host = cnf.getString("host", "localhost");
+        int port = cnf.getInt("port", 27017);
+        String dbName = cnf.getString("dbName", "DicoogleDatabase");
+        String collectionName = cnf.getString("collectionName", "DicoogleObjs");
+
+        try {
+            host = cnf.getString("host");
+        } catch (NoSuchElementException ex) {
+            //logger.warn("File storage root directory is not configured! All stored data will be sent to temporary storage.");
+            //logger.warn("Please enter the file storage configuration file and modify the \"root-dir\" property.");
+            cnf.setProperty("host", host);
+        }
+
+        try {
+            host = cnf.getString("port");
+        } catch (NoSuchElementException ex) {
+            //logger.warn("File storage root directory is not configured! All stored data will be sent to temporary storage.");
+            //logger.warn("Please enter the file storage configuration file and modify the \"root-dir\" property.");
+            cnf.setProperty("port", host);
+        }
     }
 
     @Override

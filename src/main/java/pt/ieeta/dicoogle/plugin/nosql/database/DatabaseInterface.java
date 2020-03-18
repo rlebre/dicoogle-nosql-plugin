@@ -50,15 +50,15 @@ public class DatabaseInterface {
      *
      * @param host
      * @param port
-     * @param db_name
+     * @param dbName
      * @param collectionName
      */
-    public DatabaseInterface(String host, int port, String db_name, String collectionName) {
+    public DatabaseInterface(String host, int port, String dbName, String collectionName) {
         this.mongo = new MongoClient(host, port);
-        this.database = mongo.getDatabase(db_name);
+        this.database = mongo.getDatabase(dbName);
         this.collection = database.getCollection(collectionName);
-        this.db = this.mongo.getDB(db_name);
-        this.db_name = db_name;
+        this.db = this.mongo.getDB(dbName);
+        this.db_name = dbName;
         this.gridFs = new GridFS(this.db);
         this.dicomObjAux = new DicomObjAux();
 

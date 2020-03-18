@@ -31,7 +31,7 @@ public class NoSqlStoragePlugin implements StorageInterface {
     private boolean enabled = true;
     private ConfigurationHolder settings;
 
-    private DatabaseInterface databaseInterface = new DatabaseInterface("localhost", 27017, "DicoogleDatabase", "DicoogleObjs");
+    private DatabaseInterface databaseInterface;
 
     public NoSqlStoragePlugin(DatabaseInterface databaseInterface) {
         this.databaseInterface = databaseInterface;
