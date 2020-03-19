@@ -16,7 +16,7 @@ import java.util.*;
 
 /**
  * The main plugin set.
- *
+ * <p>
  * This is the entry point for the storage, index and query distributed NoSQL plugins
  *
  * @author Rui Lebre - <ruilebre@ua.pt>
@@ -100,21 +100,10 @@ public class NoSqlPluginSet implements PluginSet {
         String dbName = cnf.getString("dbName", "DicoogleDatabase");
         String collectionName = cnf.getString("collectionName", "DicoogleObjs");
 
-        try {
-            host = cnf.getString("host");
-        } catch (NoSuchElementException ex) {
-            //logger.warn("File storage root directory is not configured! All stored data will be sent to temporary storage.");
-            //logger.warn("Please enter the file storage configuration file and modify the \"root-dir\" property.");
-            cnf.setProperty("host", host);
-        }
-
-        try {
-            host = cnf.getString("port");
-        } catch (NoSuchElementException ex) {
-            //logger.warn("File storage root directory is not configured! All stored data will be sent to temporary storage.");
-            //logger.warn("Please enter the file storage configuration file and modify the \"root-dir\" property.");
-            cnf.setProperty("port", host);
-        }
+        cnf.setProperty("host", host);
+        cnf.setProperty("port", port);
+        cnf.setProperty("dbName", dbName);
+        cnf.setProperty("collectionName", collectionName);
     }
 
     @Override
