@@ -12,7 +12,9 @@ import pt.ieeta.dicoogle.plugin.nosql.storage.NoSqlStoragePlugin;
 import pt.ua.dicoogle.sdk.*;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * The main plugin set.
@@ -49,9 +51,7 @@ public class NoSqlPluginSet implements PluginSet {
 
     @Override
     public Collection<IndexerInterface> getIndexPlugins() {
-        List<IndexerInterface> c = new LinkedList<IndexerInterface>();
-        c.add(this.json);
-        return c;
+        return Arrays.asList(this.json);
     }
 
     @Override
