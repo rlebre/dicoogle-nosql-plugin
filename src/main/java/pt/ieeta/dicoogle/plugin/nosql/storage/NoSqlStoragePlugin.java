@@ -39,12 +39,12 @@ public class NoSqlStoragePlugin implements StorageInterface {
 
     @Override
     public String getScheme() {
-        return "mem://";
+        return "nosql://";
     }
 
     @Override
     public boolean handles(URI location) {
-        return location.toString().contains("mem://");
+        return location.toString().contains("nosql://");
     }
 
 
@@ -127,7 +127,7 @@ public class NoSqlStoragePlugin implements StorageInterface {
 
     @Override
     public String getName() {
-        return "sample-plugin-storage";
+        return "dicoogle-nosql-storage";
     }
 
     @Override

@@ -130,7 +130,7 @@ public class NoSqlJsonPlugin implements IndexerInterface {
      */
     @Override
     public String getName() {
-        return "sample-plugin-json";
+        return "dicoogle-nosql-json";
     }
 
     @Override

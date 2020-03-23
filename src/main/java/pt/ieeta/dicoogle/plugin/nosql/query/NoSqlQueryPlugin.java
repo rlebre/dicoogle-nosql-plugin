@@ -103,7 +103,7 @@ public class NoSqlQueryPlugin implements QueryInterface {
 
     @Override
     public String getName() {
-        return "sample-plugin-query";
+        return "dicoogle-nosql-query";
     }
 
     @Override

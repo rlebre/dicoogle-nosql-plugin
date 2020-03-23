@@ -61,7 +61,7 @@ public class NoSqlPluginSet implements PluginSet {
 
     @Override
     public String getName() {
-        return "NoSql Plugin Set";
+        return "dicoogle-nosql";
     }
 
     @Override
