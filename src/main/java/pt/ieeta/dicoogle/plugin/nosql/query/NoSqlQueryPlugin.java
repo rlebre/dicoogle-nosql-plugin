@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Example of a query provider.
+ * Query provider for Distributed NoSQL plugin.
  *
  * @author Rui Lebre - <ruilebre@ua.pt>
  * @author Ana Almeida
@@ -33,27 +33,8 @@ public class NoSqlQueryPlugin implements QueryInterface {
         this.databaseInterface = databaseInterface;
     }
 
-    private SearchResult generateSearchResult() {
-
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("PatientID", UUID.randomUUID().toString());
-        map.put("PatientName", UUID.randomUUID().toString());
-        map.put("SOPInstanceUID", UUID.randomUUID().toString());
-        map.put("SeriesInstanceUID", UUID.randomUUID().toString());
-        map.put("StudyInstanceUID", UUID.randomUUID().toString());
-        map.put("Modality", "CT");
-        map.put("StudyDate", "20150120");
-        map.put("SeriesDate", "20150120");
-
-        SearchResult r = new SearchResult(URI.create("file:" + File.separatorChar + UUID.randomUUID().toString()), 1, map);
-
-        return r;
-    }
-
     @Override
     public Iterable<SearchResult> query(String query, Object... parameters) {
-        //this.databaseInterface =
-
         boolean advanced = query.charAt(0) != '(';
         System.out.println(advanced);
         String[] terms = query.split(" OR | AND ");
@@ -69,11 +50,9 @@ public class NoSqlQueryPlugin implements QueryInterface {
                 System.out.println(terms[i]);
                 if (terms[i].startsWith("PatientName")) {
                     int pos = terms[i].indexOf(":");
-                    int length = terms[i].length();
                     searchTerm = terms[i].substring(pos + 1);
                 }
             }
-
 
             startTime = System.currentTimeMillis();
             result = this.databaseInterface.getCloserToMap("PatientName", searchTerm);
@@ -81,8 +60,8 @@ public class NoSqlQueryPlugin implements QueryInterface {
             result.addAll(this.databaseInterface.getCloserToMap("StudyDate", searchTerm));
             result.addAll(this.databaseInterface.getCloserToMap("Modality", searchTerm));
             stopTime = System.currentTimeMillis();
-            System.out.println("Time: " + (stopTime - startTime) + "ms.");
 
+            logger.info("Time: ", (stopTime - startTime), "ms.");
         } else {
             for (String term : terms) {
                 String[] splitTerm = term.split(":");
@@ -95,10 +74,7 @@ public class NoSqlQueryPlugin implements QueryInterface {
             results.add(r);
         }
 
-
         return results;
-
-
     }
 
     @Override
