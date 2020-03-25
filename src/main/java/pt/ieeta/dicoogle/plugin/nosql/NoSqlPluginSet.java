@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
 import pt.ieeta.dicoogle.plugin.nosql.index.NoSqlJsonPlugin;
 import pt.ieeta.dicoogle.plugin.nosql.query.NoSqlQueryPlugin;
-import pt.ieeta.dicoogle.plugin.nosql.storage.NoSqlStoragePlugin;
 import pt.ua.dicoogle.sdk.*;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
 
@@ -30,7 +29,6 @@ public class NoSqlPluginSet implements PluginSet {
     private static final Logger logger = LoggerFactory.getLogger(NoSqlPluginSet.class);
 
     private final NoSqlQueryPlugin query;
-    private final NoSqlStoragePlugin storage;
     private final NoSqlJsonPlugin json;
 
     private ConfigurationHolder settings;
@@ -43,8 +41,7 @@ public class NoSqlPluginSet implements PluginSet {
 
         this.databaseInterface = new DatabaseInterface("localhost", 27017, "DicoogleDatabase", "DicoogleObjs");
         this.query = new NoSqlQueryPlugin(databaseInterface);
-        this.storage = new NoSqlStoragePlugin(databaseInterface);
-        this.json = new NoSqlJsonPlugin();
+        this.json = new NoSqlJsonPlugin(databaseInterface);
 
         logger.info("NoSql Plugin Set is ready");
     }
@@ -80,7 +77,7 @@ public class NoSqlPluginSet implements PluginSet {
 
     @Override
     public Collection<StorageInterface> getStoragePlugins() {
-        return Arrays.asList(this.storage);
+        return Collections.EMPTY_LIST;
     }
 
     @Override

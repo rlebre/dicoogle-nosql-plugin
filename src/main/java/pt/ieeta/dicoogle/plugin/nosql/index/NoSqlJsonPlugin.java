@@ -6,6 +6,7 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
 import pt.ua.dicoogle.sdk.IndexerInterface;
 import pt.ua.dicoogle.sdk.StorageInputStream;
 import pt.ua.dicoogle.sdk.datastructs.Report;
@@ -27,9 +28,11 @@ public class NoSqlJsonPlugin implements IndexerInterface {
     private static final Logger logger = LoggerFactory.getLogger(NoSqlJsonPlugin.class);
     private boolean enabled;
     private ConfigurationHolder settings;
+    private DatabaseInterface databaseInterface;
 
-    public NoSqlJsonPlugin() {
+    public NoSqlJsonPlugin(DatabaseInterface databaseInterface) {
         this.enabled = true;
+        this.databaseInterface = databaseInterface;
     }
 
     private Report indexURI(StorageInputStream storage) {
@@ -39,14 +42,16 @@ public class NoSqlJsonPlugin implements IndexerInterface {
             dicomStream.setHandler(new StopTagInputHandler(Tag.PixelData));
             DicomObject dicomObject = dicomStream.readDicomObject();
 
-            String PatientName = dicomObject.getString(Tag.PatientName);
-            String StudyInstanceUID = dicomObject.getString(Tag.StudyInstanceUID);
-            String SeriesInstanceUID = dicomObject.getString(Tag.SeriesInstanceUID);
-            String SOPInstanceUID = dicomObject.getString(Tag.SOPInstanceUID);
+            long startTime, stopTime;
+            this.databaseInterface.createIndexes();
 
-            // use slf4j for logging purposes:
-            logger.info("SOP Instance UID: {}", SOPInstanceUID);
-            logger.info("PatientName: {}", PatientName);
+            startTime = System.currentTimeMillis();
+            this.databaseInterface.insertDicomObjJson(dicomObject);
+            stopTime = System.currentTimeMillis();
+
+            logger.info("Insertation Time: ", (stopTime - startTime), "ms.");
+
+            // this.databaseInterface.executeQueriesTest();
         } catch (Exception e) {
             logger.warn("Failed to index \"{}\"", storage.getURI(), e);
             System.err.println("indexURI: Do whatever you want.");
@@ -57,8 +62,6 @@ public class NoSqlJsonPlugin implements IndexerInterface {
 
     @Override
     public Task<Report> index(final StorageInputStream file, Object... objects) {
-
-
         return new Task<>(
                 new ProgressCallable<Report>() {
                     private float progress = 0.0f;
