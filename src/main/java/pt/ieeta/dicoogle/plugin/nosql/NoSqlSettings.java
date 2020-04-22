@@ -1,11 +1,12 @@
 package pt.ieeta.dicoogle.plugin.nosql;
 
 public class NoSqlSettings {
-    private static NoSqlSettings instance = null;
     private String host = "localhost";
     private int port = 27017;
     private String dbName = "DicoogleDatabase";
     private String collectionName = "DicoogleObjs";
+
+    private static NoSqlSettings instance = null;
 
     public static NoSqlSettings getInstance() {
         if (instance == null)

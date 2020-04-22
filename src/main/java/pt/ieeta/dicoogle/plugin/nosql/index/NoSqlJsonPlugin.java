@@ -25,10 +25,11 @@ import java.net.URI;
  * @author Francisco Oliveira
  */
 public class NoSqlJsonPlugin implements IndexerInterface {
+    private DatabaseInterface databaseInterface;
+
     private static final Logger logger = LoggerFactory.getLogger(NoSqlJsonPlugin.class);
     private boolean enabled;
     private ConfigurationHolder settings;
-    private DatabaseInterface databaseInterface;
 
     public NoSqlJsonPlugin(DatabaseInterface databaseInterface) {
         this.enabled = true;
@@ -133,7 +134,7 @@ public class NoSqlJsonPlugin implements IndexerInterface {
      */
     @Override
     public String getName() {
-        return "dicoogle-nosql-json";
+        return "dicoogle-nosql-indexer";
     }
 
     @Override
@@ -159,8 +160,8 @@ public class NoSqlJsonPlugin implements IndexerInterface {
     }
 
     @Override
-    public void setSettings(ConfigurationHolder settings) {
-        this.settings = settings;
+    public void setSettings(ConfigurationHolder xmlSettings) {
+        this.settings = xmlSettings;
     }
 
     @Override
@@ -170,4 +171,7 @@ public class NoSqlJsonPlugin implements IndexerInterface {
         return true;
     }
 
+    public void setDatabaseInterface(DatabaseInterface databaseInterface) {
+        this.databaseInterface = databaseInterface;
+    }
 }
