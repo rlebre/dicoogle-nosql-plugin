@@ -25,7 +25,6 @@ public class NoSqlQueryPlugin implements QueryInterface {
     private static final Logger logger = LoggerFactory.getLogger(NoSqlQueryPlugin.class);
     private boolean enabled;
     private ConfigurationHolder settings;
-
     private DatabaseInterface databaseInterface;
 
     public NoSqlQueryPlugin(DatabaseInterface databaseInterface) {
