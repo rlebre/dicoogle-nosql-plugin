@@ -104,8 +104,11 @@ public class NoSqlQueryPlugin implements QueryInterface {
     }
 
     @Override
-    public void setSettings(ConfigurationHolder settings) {
-        this.settings = settings;
+    public void setSettings(ConfigurationHolder xmlSettings) {
+        this.settings = xmlSettings;
     }
 
+    public void setDatabaseInterface(DatabaseInterface databaseInterface) {
+        this.databaseInterface = databaseInterface;
+    }
 }
