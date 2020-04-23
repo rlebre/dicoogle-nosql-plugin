@@ -80,13 +80,23 @@ public class DatabaseInterface {
     }
 
     public List<HashMap<String, Object>> find(String tag, String value, Map<String, Object> extrafields) {
-        Document doc = new Document()
-                .append("$regex", "(?)" + Pattern.quote(value))
-                .append("$options", "i");
+        Document doc = new Document();
+        FindIterable<Document> iterable = null;
 
-        Document match = new Document();
-        match.append(tag, doc);
-        FindIterable<Document> iterable = collection.find(match);
+        if (tag.equals("*") && value.equals("*")) {
+            iterable = collection.find();
+        } else {
+            if (value.equals("*")) {
+                doc = doc.append("$exists", true);
+            } else {
+                doc = doc.append("$regex", "(?)" + Pattern.quote(value)).append("$options", "i");
+            }
+
+            Document match = new Document();
+            match.append(tag, doc);
+            String query = match.toString();
+            iterable = collection.find(match);
+        }
 
         List<HashMap<String, Object>> results = new ArrayList<>();
 
