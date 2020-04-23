@@ -79,6 +79,11 @@ public class NoSqlQueryPlugin implements QueryInterface {
         return results;
     }
 
+    /**
+     * This method is used to retrieve the unique name of the indexer.
+     *
+     * @return a fixed name for the indexer
+     */
     @Override
     public String getName() {
         return "dicoogle-nosql-query";
@@ -111,6 +116,11 @@ public class NoSqlQueryPlugin implements QueryInterface {
         this.settings = xmlSettings;
     }
 
+    /**
+     * Sets the database interface after the plugin is initialized
+     *
+     * @param databaseInterface Database interface to set
+     */
     public void setDatabaseInterface(DatabaseInterface databaseInterface) {
         this.databaseInterface = databaseInterface;
     }

@@ -193,6 +193,12 @@ public class NoSqlIndexPlugin implements IndexerInterface {
         return task;
     }
 
+    /**
+     * Unindexes the document matching the URI uri
+     *
+     * @param uri URI matching criteria
+     * @return Success of the operation
+     */
     @Override
     public boolean unindex(URI uri) {
         long documentsDeleted = databaseInterface.removeEntriesBasedOn("URI", uri.toString());
@@ -254,6 +260,11 @@ public class NoSqlIndexPlugin implements IndexerInterface {
         }
     }
 
+    /**
+     * Sets the database interface after the plugin is initialized
+     *
+     * @param databaseInterface Database interface to set
+     */
     public void setDatabaseInterface(DatabaseInterface databaseInterface) {
         this.databaseInterface = databaseInterface;
         this.queryPlugin = new NoSqlQueryPlugin(this.databaseInterface);
