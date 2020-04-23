@@ -1,6 +1,5 @@
 package pt.ieeta.dicoogle.plugin.nosql.database;
 
-import com.mongodb.Block;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.client.AggregateIterable;
@@ -11,25 +10,19 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.gridfs.GridFS;
-import com.mongodb.gridfs.GridFSInputFile;
 import org.bson.Document;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
-import org.dcm4che2.io.DicomOutputStream;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.net.URI;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
 
 /**
- * Example of an indexer plugin.
+ * Database interface to communicate with MongoDB
  *
- * @author Rui Lebre - <ruilebre@ua.pt>
+ * @author Rui Lebre, ruilebre@ua.pt
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
@@ -66,41 +59,11 @@ public class DatabaseInterface {
     }
 
     /**
-     * (APAGAR ESTA FUNÇAO)
-     *
-     * @param dcmObj
-     * @return
-     */
-    public boolean insertDicomObj(DicomObject dcmObj) {
-
-        String filename = dcmObj.get(Tag.SOPInstanceUID).getValueAsString(dcmObj.getSpecificCharacterSet(), 0);
-
-        ByteArrayOutputStream outStream;
-        DicomOutputStream dcmOutStream;
-        GridFSInputFile gridFsInputFile;
-
-        try {
-            outStream = new ByteArrayOutputStream();
-            dcmOutStream = new DicomOutputStream(outStream);
-            dcmOutStream.writeDicomFile(dcmObj);
-            gridFsInputFile = this.gridFs.createFile(outStream.toByteArray());
-            gridFsInputFile.setFilename(filename);
-            gridFsInputFile.save(gridFsInputFile.getChunkSize());
-            outStream.close();
-        } catch (IOException ex) {
-            Logger.getLogger(DatabaseInterface.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Insere os metadados de um DicomObject no MongoDB
      *
      * @param dcmObj
      */
-    public void insertDicomObjJson(DicomObject dcmObj) {
+    public void insertDicomObjJson(DicomObject dcmObj, URI uri) {
         Map<String, String> dcmObjMap = this.dicomObjAux.getFieldsDicomObj(dcmObj);
         Document document = new Document();
 
@@ -108,6 +71,7 @@ public class DatabaseInterface {
             document.append(entry.getKey(), entry.getValue());
         }
 
+        document.append("URI", uri.toString());
         this.collection.insertOne(document);
     }
 
@@ -150,7 +114,7 @@ public class DatabaseInterface {
 
         System.out.println("Encontrar paciente com o nome mais próximo");
         startTime = System.currentTimeMillis();
-        System.out.println(this.getCloserToMap("PatientName", "TOSHIBA^TAR"));
+        System.out.println(this.getCloserToMap("PatientName:TOSHIBA^TAR", new HashMap<String, Object>()));
         stopTime = System.currentTimeMillis();
         System.out.println("Time: " + (stopTime - startTime) + "ms.");
 
@@ -161,7 +125,7 @@ public class DatabaseInterface {
 
         System.out.println("Agregar por instituição, modalidade, paciente");
         startTime = System.currentTimeMillis();
-        System.out.println(this.CountMultAggregator(fields).toString());
+        System.out.println(this.countMultAggregator(fields).toString());
         stopTime = System.currentTimeMillis();
         System.out.println("Time: " + (stopTime - startTime) + "ms.");
 
@@ -196,7 +160,7 @@ public class DatabaseInterface {
     }
 
     public Map<String, Integer> countAggregator(String field) {
-        Map<String, Integer> map = new HashMap<String, Integer>();
+        Map<String, Integer> map = new HashMap<>();
 
         AggregateIterable<Document> col = collection.aggregate(
                 Arrays.asList(
@@ -214,26 +178,9 @@ public class DatabaseInterface {
         return map;
     }
 
-    public List<String> getCloserTo(String field, String value) {
-
-        Document doc = new Document()
-                .append("$regex", "(?)" + Pattern.quote(value))
-                .append("$options", "i");
-
-        Document match = new Document();
-        match.append(field, doc);
-        FindIterable<Document> iterable = collection.find(match);
-
-        List<String> results = new ArrayList();
-        for (Document document : iterable) {
-            results.add((String) document.get(field));
-        }
-
-        return results;
-    }
-
-    public List<HashMap<String, Object>> getCloserToMap(String field, String value) {
-
+    public List<HashMap<String, Object>> getCloserToMap(String terms, HashMap<String, Object> extrafields) {
+        String field = terms.split(":")[0];
+        String value = terms.split(":")[1];
         Document doc = new Document()
                 .append("$regex", "(?)" + Pattern.quote(value))
                 .append("$options", "i");
@@ -246,33 +193,23 @@ public class DatabaseInterface {
 
         System.out.println("AQUI");
 
-        /*or (Document document : iterable) {
-            //results.add((String) document.get(field));
-            System.out.println("Olá");
-            map.put("SOPInstanceUID", document);
-        }
-        return map;*/
 
         for (Document document : iterable) {
+            Iterator it = extrafields.entrySet().iterator();
             HashMap<String, Object> map = new HashMap<>();
-            System.out.println("\n\n\n" + "Patient Name: " + ((String) document.get("PatientName")) + "\n\n\n");
-            map.put("PatientID", (String) document.get("PatientID"));
-            map.put("PatientName", (String) document.get("PatientName"));
-            map.put("SOPInstanceUID", (String) document.get("SOPInstanceUID"));
-            map.put("SeriesInstanceUID", (String) document.get("SeriesInstanceUID"));
-            map.put("StudyInstanceUID", (String) document.get("StudyInstanceUID"));
-            map.put("Modality", (String) document.get("Modality"));
-            map.put("StudyDate", (String) document.get("StudyDate"));
-            map.put("InstitutionName", (String) document.get("InstitutionName"));
-            map.put("SeriesDate", (String) document.get("SeriesDate"));
-            results.add(map);
+            while (it.hasNext()) {
+                Map.Entry<String, Object> pair = (Map.Entry) it.next();
+                map.put(pair.getKey(), document.get(pair.getValue()));
+                it.remove();
+                results.add(map);
+            }
+            map.put("URI", document.get("URI"));
         }
+
         return results;
-
-
     }
 
-    public Map<Document, Integer> CountMultAggregator(List<String> fields) {
+    public Map<Document, Integer> countMultAggregator(List<String> fields) {
         Map<Document, Integer> loc = new HashMap<>();
 
         Document agg = new Document();
@@ -293,11 +230,4 @@ public class DatabaseInterface {
 
         return loc;
     }
-
-    Block<Document> printBlock = new Block<Document>() {
-        public void apply(final Document document) {
-            System.out.println(document.toJson());
-        }
-    };
-
 }
