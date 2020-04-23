@@ -1,5 +1,9 @@
 package pt.ieeta.dicoogle.plugin.nosql;
-
+/**
+ * Default settings file
+ *
+ * @author Rui Lebre, ruilebre@ua.pt
+ */
 public class NoSqlSettings {
     private String host = "localhost";
     private int port = 27017;

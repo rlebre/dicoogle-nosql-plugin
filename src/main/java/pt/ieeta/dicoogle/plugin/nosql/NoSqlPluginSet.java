@@ -20,7 +20,7 @@ import java.util.Collections;
  *
  * This is the entry point for the storage, index and query distributed NoSQL plugins
  *
- * @author Rui Lebre - <ruilebre@ua.pt>
+ * @author Rui Lebre, ruilebre@ua.pt
  * @author Ana Almeida
  * @author Francisco Oliveira
  */

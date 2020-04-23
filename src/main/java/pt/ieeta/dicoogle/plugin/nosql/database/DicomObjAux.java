@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 /**
  * Example of an indexer plugin.
  *
- * @author Rui Lebre - <ruilebre@ua.pt>
+ * @author Rui Lebre, ruilebre@ua.pt
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
@@ -74,7 +74,5 @@ public class DicomObjAux {
         }
 
         return dcmObjMap;
-
     }
-
 }
