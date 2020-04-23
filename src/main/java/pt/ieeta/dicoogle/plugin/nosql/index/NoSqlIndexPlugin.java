@@ -141,7 +141,9 @@ public class NoSqlIndexPlugin implements IndexerInterface {
 
     @Override
     public boolean unindex(URI uri) {
-        return databaseInterface.removeEntryBasedOn("URI", uri.toString());
+        long documentsDeleted = databaseInterface.removeEntriesBasedOn("URI", uri.toString());
+        logger.info("Unindexed {} documents successfully.", documentsDeleted);
+        return documentsDeleted >= 0;
     }
 
     /**

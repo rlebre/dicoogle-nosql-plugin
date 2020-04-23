@@ -232,8 +232,8 @@ public class DatabaseInterface {
         return loc;
     }
 
-    public boolean removeEntryBasedOn(String key, String value) {
+    public long removeEntriesBasedOn(String key, String value) {
         DeleteResult result = collection.deleteMany(eq(key, value));
-        return result.wasAcknowledged();
+        return result.getDeletedCount();
     }
 }
