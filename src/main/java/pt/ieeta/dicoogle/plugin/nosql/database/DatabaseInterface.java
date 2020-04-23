@@ -12,9 +12,7 @@ import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.gridfs.GridFS;
 import org.bson.Document;
-import org.dcm4che2.data.DicomObject;
 
-import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -62,17 +60,15 @@ public class DatabaseInterface {
     /**
      * Insere os metadados de um DicomObject no MongoDB
      *
-     * @param dcmObj
+     * @param dicomMap
      */
-    public void insertDicomObjJson(DicomObject dcmObj, URI uri) {
-        Map<String, String> dcmObjMap = this.dicomObjAux.getFieldsDicomObj(dcmObj);
+    public void insertDicomObjMap(HashMap<String, String> dicomMap) {
         Document document = new Document();
 
-        for (Map.Entry<String, String> entry : dcmObjMap.entrySet()) {
+        for (Map.Entry<String, String> entry : dicomMap.entrySet()) {
             document.append(entry.getKey(), entry.getValue());
         }
 
-        document.append("URI", uri.toString());
         this.collection.insertOne(document);
     }
 
@@ -115,7 +111,7 @@ public class DatabaseInterface {
 
         System.out.println("Encontrar paciente com o nome mais próximo");
         startTime = System.currentTimeMillis();
-        System.out.println(this.getCloserToMap("PatientName:TOSHIBA^TAR", new HashMap<String, Object>()));
+        System.out.println(this.find("PatientName:TOSHIBA^TAR", new HashMap<String, Object>()));
         stopTime = System.currentTimeMillis();
         System.out.println("Time: " + (stopTime - startTime) + "ms.");
 
@@ -132,16 +128,6 @@ public class DatabaseInterface {
 
     }
 
-    public List<Document> find(String field, String value) {
-        FindIterable<Document> docs = collection.find(eq(field, value));
-
-        List<Document> results = new ArrayList();
-        for (Document document : docs) {
-            results.add(document);
-        }
-
-        return results;
-    }
 
     public int countDistinct(String field) {
         // Contar, por exemplo, quantos tipos de exames diferentes existem
@@ -179,7 +165,18 @@ public class DatabaseInterface {
         return map;
     }
 
-    public List<HashMap<String, Object>> getCloserToMap(String terms, HashMap<String, Object> extrafields) {
+    public List<Document> find(String field, String value) {
+        FindIterable<Document> docs = collection.find(eq(field, value));
+
+        List<Document> results = new ArrayList();
+        for (Document document : docs) {
+            results.add(document);
+        }
+
+        return results;
+    }
+
+    public List<HashMap<String, Object>> find(String terms, HashMap<String, Object> extrafields) {
         String field = terms.split(":")[0];
         String value = terms.split(":")[1];
         Document doc = new Document()
@@ -192,19 +189,23 @@ public class DatabaseInterface {
 
         List<HashMap<String, Object>> results = new ArrayList<>();
 
-        System.out.println("AQUI");
-
-
         for (Document document : iterable) {
+            document.remove("_id");
+
             Iterator it = extrafields.entrySet().iterator();
             HashMap<String, Object> map = new HashMap<>();
+
+            if (it.hasNext()) {
+                map.put("URI", document.get("URI"));
+            }
+
             while (it.hasNext()) {
                 Map.Entry<String, Object> pair = (Map.Entry) it.next();
                 map.put(pair.getKey(), document.get(pair.getValue()));
                 it.remove();
-                results.add(map);
             }
-            map.put("URI", document.get("URI"));
+
+            results.add(map);
         }
 
         return results;
