@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
 import pt.ua.dicoogle.sdk.IndexerInterface;
 import pt.ua.dicoogle.sdk.StorageInputStream;
+import pt.ua.dicoogle.sdk.datastructs.IndexReport2;
 import pt.ua.dicoogle.sdk.datastructs.Report;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
 import pt.ua.dicoogle.sdk.task.ProgressCallable;
@@ -20,7 +21,7 @@ import java.net.URI;
 /**
  * Example of an indexer plugin.
  *
- * @author Rui Lebre - <ruilebre@ua.pt>
+ * @author Rui Lebre, ruilebre@ua.pt
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
@@ -36,8 +37,7 @@ public class NoSqlJsonPlugin implements IndexerInterface {
         this.databaseInterface = databaseInterface;
     }
 
-    private Report indexURI(StorageInputStream storage) {
-
+    private synchronized void indexURI(StorageInputStream storage, IndexReport2 r) {
         try (DicomInputStream dicomStream = new DicomInputStream(new BufferedInputStream(storage.getInputStream()))) {
 
             dicomStream.setHandler(new StopTagInputHandler(Tag.PixelData));
@@ -47,18 +47,17 @@ public class NoSqlJsonPlugin implements IndexerInterface {
             this.databaseInterface.createIndexes();
 
             startTime = System.currentTimeMillis();
-            this.databaseInterface.insertDicomObjJson(dicomObject);
+            this.databaseInterface.insertDicomObjJson(dicomObject, storage.getURI());
             stopTime = System.currentTimeMillis();
 
-            logger.info("Insertation Time: ", (stopTime - startTime), "ms.");
-
+            logger.info("Insertion Time: ", (stopTime - startTime), "ms.");
+            r.addIndexFile();
             // this.databaseInterface.executeQueriesTest();
         } catch (Exception e) {
             logger.warn("Failed to index \"{}\"", storage.getURI(), e);
             System.err.println("indexURI: Do whatever you want.");
+            r.addError();
         }
-
-        return new Report();
     }
 
     @Override
@@ -69,16 +68,20 @@ public class NoSqlJsonPlugin implements IndexerInterface {
 
                     @Override
                     public Report call() {
+                        logger.debug("Started single index task: {}", file.getURI());
 
-                        Report r = null;
+                        IndexReport2 r = new IndexReport2();
+                        r.started();
+
                         try {
-                            r = indexURI(file);
+                            indexURI(file, r);
                         } catch (Exception e) {
                             logger.warn("Indexation of \"{}\" failed", file.getURI(), e);
                         }
 
                         progress = 1.0f;
-
+                        logger.info("Finished single index task: {},{}", this.hashCode(), r);
+                        r.finished();
                         return r;
                     }
 
@@ -87,7 +90,6 @@ public class NoSqlJsonPlugin implements IndexerInterface {
                         return progress;
                     }
                 });
-
     }
 
     @Override
@@ -99,10 +101,10 @@ public class NoSqlJsonPlugin implements IndexerInterface {
                     @Override
                     public Report call() {
 
-                        Report r = new Report();
+                        IndexReport2 r = new IndexReport2();
                         try {
                             for (StorageInputStream f : files) {
-                                r = indexURI(f);
+                                indexURI(f, r);
                             }
                         } catch (Exception e) {
                             logger.warn("Indexation failed", e);
@@ -118,7 +120,6 @@ public class NoSqlJsonPlugin implements IndexerInterface {
                         return progress;
                     }
                 });
-
     }
 
     @Override
@@ -166,9 +167,19 @@ public class NoSqlJsonPlugin implements IndexerInterface {
 
     @Override
     public boolean handles(URI path) {
-        // State here whether this indexer can index the file at the given path.
-        // If not sure, simply return true and let the indexation procedures find out.
-        return true;
+        int indexExt = path.toString().lastIndexOf('.');
+        if (indexExt == -1) {
+            return true; // handles files with no extensions
+        }
+
+        String extension = path.toString().substring(indexExt);
+        switch (extension.toLowerCase()) {
+            case ".dicom":
+            case ".dcm":
+                return true;  // handles files with dcm extensions
+            default:
+                return false; // everything else, it does not handle
+        }
     }
 
     public void setDatabaseInterface(DatabaseInterface databaseInterface) {
