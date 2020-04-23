@@ -7,17 +7,18 @@ import pt.ua.dicoogle.sdk.QueryInterface;
 import pt.ua.dicoogle.sdk.datastructs.SearchResult;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Query provider for Distributed NoSQL plugin.
  *
- * @author Rui Lebre - <ruilebre@ua.pt>
+ * @author Rui Lebre, ruilebre@ua.pt
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
@@ -26,6 +27,7 @@ public class NoSqlQueryPlugin implements QueryInterface {
     private boolean enabled;
     private ConfigurationHolder settings;
     private DatabaseInterface databaseInterface;
+    private static final Pattern pattern = Pattern.compile("([a-zA-Z_0-9]*:(Float|Numeric):)+");
 
     public NoSqlQueryPlugin(DatabaseInterface databaseInterface) {
         this.enabled = true;
@@ -34,42 +36,43 @@ public class NoSqlQueryPlugin implements QueryInterface {
 
     @Override
     public Iterable<SearchResult> query(String query, Object... parameters) {
-        boolean advanced = query.charAt(0) != '(';
-        System.out.println(advanced);
-        String[] terms = query.split(" OR | AND ");
-        String searchTerm = "";
+        long time = System.currentTimeMillis();
+
+        if (this.databaseInterface == null) {
+            logger.warn("Query was attempted before settings were initialized");
+            return Collections.EMPTY_LIST;
+        }
+
+        Matcher matcher = pattern.matcher(query);
+        ArrayList<String> fieldsNumeric = new ArrayList<>();
+        while (matcher.find()) {
+            String field = matcher.group().split(":")[0];
+            fieldsNumeric.add(field);
+        }
+
+        query = query.replace("Float:", "");
+        query = query.replace("Numeric:", "");
+        query = query.replaceAll("\"", "");
+        query = query.replaceAll("\\(", "").replaceAll("\\)", "");
+
+        String[] terms = query.split("OR |AND ");
 
         List<SearchResult> results = new ArrayList<>();
 
         long startTime, stopTime;
         List<HashMap<String, Object>> result = new ArrayList<>();
 
-        if (!advanced) {
-            for (int i = 0; i < terms.length; i++) {
-                System.out.println(terms[i]);
-                if (terms[i].startsWith("PatientName")) {
-                    int pos = terms[i].indexOf(":");
-                    searchTerm = terms[i].substring(pos + 1);
-                }
-            }
+        HashMap<String, Object> extrafields = null;
+        if (parameters.length > 0)
+            extrafields = (HashMap<String, Object>) parameters[0];
 
-            startTime = System.currentTimeMillis();
-            result = this.databaseInterface.getCloserToMap("PatientName", searchTerm);
-            result.addAll(this.databaseInterface.getCloserToMap("InstitutionName", searchTerm));
-            result.addAll(this.databaseInterface.getCloserToMap("StudyDate", searchTerm));
-            result.addAll(this.databaseInterface.getCloserToMap("Modality", searchTerm));
-            stopTime = System.currentTimeMillis();
-
-            logger.info("Time: ", (stopTime - startTime), "ms.");
-        } else {
-            for (String term : terms) {
-                String[] splitTerm = term.split(":");
-                result.addAll(this.databaseInterface.getCloserToMap(splitTerm[0], splitTerm[1]));
-            }
+        for (String term : terms) {
+            result.addAll(this.databaseInterface.getCloserToMap(term, extrafields));
         }
 
+
         for (HashMap<String, Object> map : result) {
-            SearchResult r = new SearchResult(URI.create("file:" + File.separatorChar + UUID.randomUUID().toString()), 1, map);
+            SearchResult r = new SearchResult(URI.create((String) map.get("URI")), 1, map);
             results.add(r);
         }
 
