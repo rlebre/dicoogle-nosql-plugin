@@ -113,7 +113,6 @@ public class DatabaseInterface {
             while (it.hasNext()) {
                 Map.Entry<String, Object> pair = (Map.Entry) it.next();
                 map.put(pair.getKey(), document.get(pair.getValue()));
-                it.remove();
             }
 
             results.add(map);
