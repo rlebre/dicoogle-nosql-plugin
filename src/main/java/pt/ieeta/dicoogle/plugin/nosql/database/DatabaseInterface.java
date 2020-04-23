@@ -130,7 +130,6 @@ public class DatabaseInterface {
 
 
     public int countDistinct(String field) {
-        // Contar, por exemplo, quantos tipos de exames diferentes existem
         int count = 0;
 
         AggregateIterable<Document> col = collection.aggregate(
