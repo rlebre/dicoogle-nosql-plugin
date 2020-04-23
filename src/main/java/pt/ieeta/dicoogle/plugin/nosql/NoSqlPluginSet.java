@@ -6,7 +6,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
-import pt.ieeta.dicoogle.plugin.nosql.index.NoSqlJsonPlugin;
+import pt.ieeta.dicoogle.plugin.nosql.index.NoSqlIndexPlugin;
 import pt.ieeta.dicoogle.plugin.nosql.query.NoSqlQueryPlugin;
 import pt.ua.dicoogle.sdk.PluginBase;
 import pt.ua.dicoogle.sdk.StorageInterface;
@@ -29,7 +29,7 @@ public class NoSqlPluginSet extends PluginBase {
     private static final Logger logger = LoggerFactory.getLogger(NoSqlPluginSet.class);
 
     private final NoSqlQueryPlugin query;
-    private final NoSqlJsonPlugin json;
+    private final NoSqlIndexPlugin json;
 
     private ConfigurationHolder settings;
 
@@ -46,7 +46,7 @@ public class NoSqlPluginSet extends PluginBase {
         NoSqlSettings defaultSettings = NoSqlSettings.getInstance();
         this.databaseInterface = new DatabaseInterface(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName());
         this.query = new NoSqlQueryPlugin(databaseInterface);
-        this.json = new NoSqlJsonPlugin(databaseInterface);
+        this.json = new NoSqlIndexPlugin(databaseInterface);
 
         this.queryPlugins.add(this.query);
         this.indexPlugins.add(this.json);
