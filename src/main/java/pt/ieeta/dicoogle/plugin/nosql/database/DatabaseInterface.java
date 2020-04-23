@@ -1,6 +1,5 @@
 package pt.ieeta.dicoogle.plugin.nosql.database;
 
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
@@ -10,8 +9,9 @@ import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.gridfs.GridFS;
 import org.bson.Document;
+import pt.ua.dicoogle.sdk.utils.TagValue;
+import pt.ua.dicoogle.sdk.utils.TagsStruct;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -26,19 +26,12 @@ import static com.mongodb.client.model.Filters.eq;
  * @author Francisco Oliveira
  */
 public class DatabaseInterface {
-
-    private DB db;
     private MongoClient mongo;
     private MongoDatabase database;
     private MongoCollection<Document> collection;
-    private String db_name;
-    private GridFS gridFs;
-    private DicomObjAux dicomObjAux;
-
-    private Map<Integer, String> tagsDicom;
 
     /**
-     * Construtor
+     * Constructor
      *
      * @param host
      * @param port
@@ -49,18 +42,12 @@ public class DatabaseInterface {
         this.mongo = new MongoClient(host, port);
         this.database = mongo.getDatabase(dbName);
         this.collection = database.getCollection(collectionName);
-        this.db = this.mongo.getDB(dbName);
-        this.db_name = dbName;
-        this.gridFs = new GridFS(this.db);
-        this.dicomObjAux = new DicomObjAux();
-
-        this.tagsDicom = this.dicomObjAux.getAllDicomObjTags(); // Obter todas as tags do dicoogle
     }
 
     /**
-     * Insere os metadados de um DicomObject no MongoDB
+     * Inserts a HashMap containing TAG:VALUE to a MongoDB document
      *
-     * @param dicomMap
+     * @param dicomMap HashMap to insert
      */
     public void insertDicomObjMap(HashMap<String, String> dicomMap) {
         Document document = new Document();
@@ -73,12 +60,70 @@ public class DatabaseInterface {
     }
 
     public void createIndexes() {
-        // Criação de indices
-        this.collection.createIndex(Indexes.ascending("PatientName"));
-        this.collection.createIndex(Indexes.ascending("InstitutionName"));
-        this.collection.createIndex(Indexes.ascending("Modality"));
-        this.collection.createIndex(Indexes.ascending("StudyDate"));
+        TagsStruct tagStruct = TagsStruct.getInstance();
+        Set<TagValue> dimTags = tagStruct.getDIMFields();
+
+        for (TagValue tag : dimTags) {
+            this.collection.createIndex(Indexes.ascending(tag.getName()));
+        }
     }
+
+    public List<Document> find(String field, String value) {
+        FindIterable<Document> docs = collection.find(eq(field, value));
+
+        List<Document> results = new ArrayList();
+        for (Document document : docs) {
+            results.add(document);
+        }
+
+        return results;
+    }
+
+    public List<HashMap<String, Object>> find(String tag, String value, Map<String, Object> extrafields) {
+        Document doc = new Document()
+                .append("$regex", "(?)" + Pattern.quote(value))
+                .append("$options", "i");
+
+        Document match = new Document();
+        match.append(tag, doc);
+        FindIterable<Document> iterable = collection.find(match);
+
+        List<HashMap<String, Object>> results = new ArrayList<>();
+
+        for (Document document : iterable) {
+            document.remove("_id");
+
+            Iterator it = extrafields.entrySet().iterator();
+            HashMap<String, Object> map = new HashMap<>();
+
+            if (it.hasNext()) {
+                map.put("URI", document.get("URI"));
+            }
+
+            while (it.hasNext()) {
+                Map.Entry<String, Object> pair = (Map.Entry) it.next();
+                map.put(pair.getKey(), document.get(pair.getValue()));
+                it.remove();
+            }
+
+            results.add(map);
+        }
+
+        return results;
+    }
+
+    /**
+     * Removes all entries in the MongoDB database matching the key and value
+     *
+     * @param key
+     * @param value
+     * @return How many records were deleted
+     */
+    public long removeEntriesBasedOn(String key, String value) {
+        DeleteResult result = collection.deleteMany(eq(key, value));
+        return result.getDeletedCount();
+    }
+
 
     public void executeQueriesTest() {
         long startTime, stopTime;
@@ -111,7 +156,7 @@ public class DatabaseInterface {
 
         System.out.println("Encontrar paciente com o nome mais próximo");
         startTime = System.currentTimeMillis();
-        System.out.println(this.find("PatientName:TOSHIBA^TAR", new HashMap<String, Object>()));
+        System.out.println(this.find("PatientName", "TOSHIBA^TAR", new HashMap<String, Object>()));
         stopTime = System.currentTimeMillis();
         System.out.println("Time: " + (stopTime - startTime) + "ms.");
 
@@ -127,7 +172,6 @@ public class DatabaseInterface {
         System.out.println("Time: " + (stopTime - startTime) + "ms.");
 
     }
-
 
     public int countDistinct(String field) {
         int count = 0;
@@ -164,52 +208,6 @@ public class DatabaseInterface {
         return map;
     }
 
-    public List<Document> find(String field, String value) {
-        FindIterable<Document> docs = collection.find(eq(field, value));
-
-        List<Document> results = new ArrayList();
-        for (Document document : docs) {
-            results.add(document);
-        }
-
-        return results;
-    }
-
-    public List<HashMap<String, Object>> find(String terms, HashMap<String, Object> extrafields) {
-        String field = terms.split(":")[0];
-        String value = terms.split(":")[1];
-        Document doc = new Document()
-                .append("$regex", "(?)" + Pattern.quote(value))
-                .append("$options", "i");
-
-        Document match = new Document();
-        match.append(field, doc);
-        FindIterable<Document> iterable = collection.find(match);
-
-        List<HashMap<String, Object>> results = new ArrayList<>();
-
-        for (Document document : iterable) {
-            document.remove("_id");
-
-            Iterator it = extrafields.entrySet().iterator();
-            HashMap<String, Object> map = new HashMap<>();
-
-            if (it.hasNext()) {
-                map.put("URI", document.get("URI"));
-            }
-
-            while (it.hasNext()) {
-                Map.Entry<String, Object> pair = (Map.Entry) it.next();
-                map.put(pair.getKey(), document.get(pair.getValue()));
-                it.remove();
-            }
-
-            results.add(map);
-        }
-
-        return results;
-    }
-
     public Map<Document, Integer> countMultAggregator(List<String> fields) {
         Map<Document, Integer> loc = new HashMap<>();
 
@@ -230,10 +228,5 @@ public class DatabaseInterface {
         }
 
         return loc;
-    }
-
-    public long removeEntriesBasedOn(String key, String value) {
-        DeleteResult result = collection.deleteMany(eq(key, value));
-        return result.getDeletedCount();
     }
 }

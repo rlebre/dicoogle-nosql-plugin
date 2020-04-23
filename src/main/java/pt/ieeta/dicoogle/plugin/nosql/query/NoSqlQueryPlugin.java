@@ -8,11 +8,7 @@ import pt.ua.dicoogle.sdk.datastructs.SearchResult;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Matcher;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -34,20 +30,19 @@ public class NoSqlQueryPlugin implements QueryInterface {
         this.databaseInterface = databaseInterface;
     }
 
+    public static Map<String, Object> getDefaultExtraFields() {
+        Map<String, Object> extrafields = new HashMap<>();
+        extrafields.put("SOPInstanceUID", "SOPInstanceUID");
+        extrafields.put("URI", "URI");
+
+        return extrafields;
+    }
+
     @Override
     public Iterable<SearchResult> query(String query, Object... parameters) {
-        long time = System.currentTimeMillis();
-
         if (this.databaseInterface == null) {
             logger.warn("Query was attempted before settings were initialized");
             return Collections.EMPTY_LIST;
-        }
-
-        Matcher matcher = pattern.matcher(query);
-        ArrayList<String> fieldsNumeric = new ArrayList<>();
-        while (matcher.find()) {
-            String field = matcher.group().split(":")[0];
-            fieldsNumeric.add(field);
         }
 
         query = query.replace("Float:", "");
@@ -55,26 +50,31 @@ public class NoSqlQueryPlugin implements QueryInterface {
         query = query.replaceAll("\"", "");
         query = query.replaceAll("\\(", "").replaceAll("\\)", "");
 
+        // TODO: Support complex queries with OR and AND
         String[] terms = query.split("OR |AND ");
 
         List<SearchResult> results = new ArrayList<>();
 
-        long startTime, stopTime;
         List<HashMap<String, Object>> result = new ArrayList<>();
+        Map<String, Object> extrafields = getDefaultExtraFields();
+        long startTime = System.currentTimeMillis();
 
-        HashMap<String, Object> extrafields = new HashMap<>();
-        if (parameters.length > 0)
+        if (parameters.length > 0) {
             extrafields = (HashMap<String, Object>) parameters[0];
-
-        for (String term : terms) {
-            result.addAll(this.databaseInterface.find(term, extrafields));
         }
 
+        for (String term : terms) {
+            String[] tagValue = term.split(":");
+            result.addAll(this.databaseInterface.find(tagValue[0], tagValue[1], extrafields));
+        }
 
         for (HashMap<String, Object> map : result) {
             SearchResult r = new SearchResult(URI.create((String) map.get("URI")), 1, map);
             results.add(r);
         }
+
+        long stopTime = System.currentTimeMillis();
+        logger.info("Finished opening result stream, Query: {},{},{}", results.size(), (stopTime - startTime), query);
 
         return results;
     }
