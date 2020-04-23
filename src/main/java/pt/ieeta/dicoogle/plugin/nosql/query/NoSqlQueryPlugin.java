@@ -24,10 +24,10 @@ import java.util.regex.Pattern;
  */
 public class NoSqlQueryPlugin implements QueryInterface {
     private static final Logger logger = LoggerFactory.getLogger(NoSqlQueryPlugin.class);
+    private static final Pattern pattern = Pattern.compile("([a-zA-Z_0-9]*:(Float|Numeric):)+");
     private boolean enabled;
     private ConfigurationHolder settings;
     private DatabaseInterface databaseInterface;
-    private static final Pattern pattern = Pattern.compile("([a-zA-Z_0-9]*:(Float|Numeric):)+");
 
     public NoSqlQueryPlugin(DatabaseInterface databaseInterface) {
         this.enabled = true;
@@ -62,12 +62,12 @@ public class NoSqlQueryPlugin implements QueryInterface {
         long startTime, stopTime;
         List<HashMap<String, Object>> result = new ArrayList<>();
 
-        HashMap<String, Object> extrafields = null;
+        HashMap<String, Object> extrafields = new HashMap<>();
         if (parameters.length > 0)
             extrafields = (HashMap<String, Object>) parameters[0];
 
         for (String term : terms) {
-            result.addAll(this.databaseInterface.getCloserToMap(term, extrafields));
+            result.addAll(this.databaseInterface.find(term, extrafields));
         }
 
 
