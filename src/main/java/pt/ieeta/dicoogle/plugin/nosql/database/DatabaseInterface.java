@@ -94,7 +94,7 @@ public class DatabaseInterface {
 
             Document match = new Document();
             match.append(tag, doc);
-            String query = match.toString();
+
             iterable = collection.find(match);
         }
 
