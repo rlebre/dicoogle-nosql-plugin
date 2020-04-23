@@ -9,6 +9,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Indexes;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.gridfs.GridFS;
 import org.bson.Document;
 import org.dcm4che2.data.DicomObject;
@@ -229,5 +230,10 @@ public class DatabaseInterface {
         }
 
         return loc;
+    }
+
+    public boolean removeEntryBasedOn(String key, String value) {
+        DeleteResult result = collection.deleteMany(eq(key, value));
+        return result.wasAcknowledged();
     }
 }

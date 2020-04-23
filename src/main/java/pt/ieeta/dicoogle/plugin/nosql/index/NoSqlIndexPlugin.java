@@ -141,8 +141,7 @@ public class NoSqlIndexPlugin implements IndexerInterface {
 
     @Override
     public boolean unindex(URI uri) {
-        // TODO: Not implemented
-        return false;
+        return databaseInterface.removeEntryBasedOn("URI", uri.toString());
     }
 
     /**
