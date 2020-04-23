@@ -16,23 +16,25 @@ import pt.ua.dicoogle.sdk.task.ProgressCallable;
 import pt.ua.dicoogle.sdk.task.Task;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.util.Iterator;
 
 /**
- * Example of an indexer plugin.
+ * Indexer plugin for MongoDB
  *
  * @author Rui Lebre, ruilebre@ua.pt
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
-public class NoSqlJsonPlugin implements IndexerInterface {
+public class NoSqlIndexPlugin implements IndexerInterface {
     private DatabaseInterface databaseInterface;
 
-    private static final Logger logger = LoggerFactory.getLogger(NoSqlJsonPlugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(NoSqlIndexPlugin.class);
     private boolean enabled;
     private ConfigurationHolder settings;
 
-    public NoSqlJsonPlugin(DatabaseInterface databaseInterface) {
+    public NoSqlIndexPlugin(DatabaseInterface databaseInterface) {
         this.enabled = true;
         this.databaseInterface = databaseInterface;
     }
@@ -52,10 +54,8 @@ public class NoSqlJsonPlugin implements IndexerInterface {
 
             logger.info("Insertion Time: ", (stopTime - startTime), "ms.");
             r.addIndexFile();
-            // this.databaseInterface.executeQueriesTest();
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.warn("Failed to index \"{}\"", storage.getURI(), e);
-            System.err.println("indexURI: Do whatever you want.");
             r.addError();
         }
     }
@@ -73,14 +73,15 @@ public class NoSqlJsonPlugin implements IndexerInterface {
                         IndexReport2 r = new IndexReport2();
                         r.started();
 
-                        try {
+                        if (!handles(file.getURI())) {
+                            r.addError();
+                            logger.error("Indexation of \"{}\" failed.", file.getURI());
+                        } else {
                             indexURI(file, r);
-                        } catch (Exception e) {
-                            logger.warn("Indexation of \"{}\" failed", file.getURI(), e);
+                            logger.info("Finished single index task: {},{}", this.hashCode(), r);
                         }
 
                         progress = 1.0f;
-                        logger.info("Finished single index task: {},{}", this.hashCode(), r);
                         r.finished();
                         return r;
                     }
@@ -100,18 +101,34 @@ public class NoSqlJsonPlugin implements IndexerInterface {
 
                     @Override
                     public Report call() {
-
+                        logger.debug("Started Index Task: {}", this.hashCode());
                         IndexReport2 r = new IndexReport2();
-                        try {
-                            for (StorageInputStream f : files) {
-                                indexURI(f, r);
+                        r.started();
+
+                        Iterator<StorageInputStream> it = files.iterator();
+                        int i = 1;
+
+                        while (it.hasNext()) {
+                            StorageInputStream s = it.next();
+                            if (!handles(s.getURI())) {
+                                continue;
                             }
-                        } catch (Exception e) {
-                            logger.warn("Indexation failed", e);
+
+                            logger.debug("Started indexing: {},{},{}", this.hashCode(), i, s.getURI());
+                            try {
+                                indexURI(s, r);
+                            } catch (Exception e) {
+                                logger.error("ERROR indexing: {},{},{}", this.hashCode(), i, s.getURI(), e);
+                                r.addError();
+                            }
+
+                            logger.info("Finished indexing: {},{},{},{}", this.hashCode(), i, s.getURI(), r);
+                            i++;
                         }
 
                         progress = 1.0f;
-
+                        r.finished();
+                        logger.info("Finished Index Task: {},{}", this.hashCode(), r);
                         return r;
                     }
 
@@ -124,7 +141,7 @@ public class NoSqlJsonPlugin implements IndexerInterface {
 
     @Override
     public boolean unindex(URI uri) {
-        // Not implemented
+        // TODO: Not implemented
         return false;
     }
 
