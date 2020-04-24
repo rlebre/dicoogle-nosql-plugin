@@ -11,7 +11,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dicoogle.version>2.5.0</dicoogle.version>
-        <jetty.version>9.4.2.v20170220</jetty.version>
     </properties>
 
     <dependencies>
