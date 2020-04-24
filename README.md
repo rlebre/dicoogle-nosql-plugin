@@ -21,7 +21,7 @@ to your `DicoogleDir/Plugins` folder;
 
 3. Run Dicoogle. Example: `sh DicoogleServer.sh`.
 
-## Test the query plugin
+### Test the query plugin
 1. Activate the _Query Retrieve Service_ in Dicoogle Management tab available at
 `localhost:8080/#/management` running on port 1045
 
@@ -36,7 +36,7 @@ to your `DicoogleDir/Plugins` folder;
    findscu -S -k 0008,0052="IMAGE" -k PatientID="*" -aec DICOOGLE-STORAGE localhost 1045
    ```
 
-## Test the index plugin
+### Test the index plugin
 1. Activate the _Storage Service_ in Dicoogle Management tab available at
 `localhost:8080/#/management` running on port 6666
 
@@ -54,3 +54,10 @@ and using `dcmtk`toolkit, sending via C-STORE to Dicoogle.
     ```shell script
     dcmsend -aec DICOOGLE-STORAGE localhost 6666 $(find <dir> -name '*.dcm' -print)
     ```
+   
+## TODO List
+- [ ] Support complex queries (with AND and OR)
+- [ ] Support to index all the DICOM TAGS; currently only the DIM are supported
+- [ ] Use _sync_ and _async_ MongoDB drivers for different cases; for instance,
+ use _async_ for insert and delete MongoDB documents and use _sync_ for find/query
+ operations where the user should wait for the data retrieval
