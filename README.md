@@ -21,6 +21,20 @@ to your `DicoogleDir/Plugins` folder;
 
 3. Run Dicoogle. Example: `sh DicoogleServer.sh`.
 
+### Configuration
+Plugin configuration is available at `DicoogleDir/Plugins/settings/dicoogle-distributed-nosql.xml`
+Upon initialization, if no configurations file is supplied, the Dicoogle Platform
+creates one with the default values. This plugin allows the configuration of the MongoDB host,
+port, database name and database collection. Example:
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+    <host>localhost</host>
+    <port>27017</port>
+    <dbName>DicoogleDatabase</dbName>
+    <collectionName>DicoogleObjs</collectionName>
+</configuration>
+```
 ### Test the query plugin
 1. Activate the _Query Retrieve Service_ in Dicoogle Management tab available at
 `localhost:8080/#/management` running on port 1045
