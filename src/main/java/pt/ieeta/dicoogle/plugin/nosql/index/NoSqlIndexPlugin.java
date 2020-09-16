@@ -7,7 +7,7 @@ import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.io.StopTagInputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
+import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseMiddleware;
 import pt.ieeta.dicoogle.plugin.nosql.query.NoSqlQueryPlugin;
 import pt.ua.dicoogle.sdk.IndexerInterface;
 import pt.ua.dicoogle.sdk.StorageInputStream;
@@ -37,14 +37,14 @@ import static pt.ieeta.dicoogle.plugin.nosql.index.IndexUtils.getValue;
  */
 public class NoSqlIndexPlugin implements IndexerInterface {
     private static final Logger logger = LoggerFactory.getLogger(NoSqlIndexPlugin.class);
-    private DatabaseInterface databaseInterface;
+    private DatabaseMiddleware databaseMiddleware;
     private NoSqlQueryPlugin queryPlugin;
     private boolean enabled;
     private ConfigurationHolder settings;
 
-    public NoSqlIndexPlugin(DatabaseInterface databaseInterface) {
+    public NoSqlIndexPlugin(DatabaseMiddleware databaseMiddleware) {
         this.enabled = true;
-        this.databaseInterface = databaseInterface;
+        this.databaseMiddleware = databaseMiddleware;
     }
 
     private synchronized void indexURI(StorageInputStream storage, IndexReport2 r) {
@@ -81,7 +81,7 @@ public class NoSqlIndexPlugin implements IndexerInterface {
 
             startTime = System.currentTimeMillis();
             TagsStruct tagStruct = TagsStruct.getInstance();
-            HashMap<String, String> tagValue = new HashMap<>();
+            HashMap<String, Object> tagValue = new HashMap<>();
             for (TagValue tag : tagStruct.getDIMFields()) {
                 DicomElement e = dicomObject.get(tag.getTagNumber());
                 String value = "";
@@ -97,7 +97,7 @@ public class NoSqlIndexPlugin implements IndexerInterface {
 
             tagValue.put("URI", storage.getURI().toString());
 
-            this.databaseInterface.insertDicomObjMap(tagValue);
+            this.databaseMiddleware.insertDicomObjMap(tagValue);
             stopTime = System.currentTimeMillis();
 
             logger.info("Insertion Time: ", (stopTime - startTime), "ms.");
@@ -110,7 +110,7 @@ public class NoSqlIndexPlugin implements IndexerInterface {
 
     @Override
     public Task<Report> index(final StorageInputStream file, Object... objects) {
-        Task task = new Task<>(
+        Task<Report> task = new Task<>(
                 new ProgressCallable<Report>() {
                     private float progress = 0.0f;
 
@@ -140,13 +140,13 @@ public class NoSqlIndexPlugin implements IndexerInterface {
                     }
                 });
 
-        this.databaseInterface.createIndexes();
+        this.databaseMiddleware.createIndexes();
         return task;
     }
 
     @Override
     public Task<Report> index(final Iterable<StorageInputStream> files, Object... objects) {
-        Task task = new Task<>(
+        Task<Report> task = new Task<>(
                 new ProgressCallable<Report>() {
                     private float progress = 0.0f;
 
@@ -189,7 +189,7 @@ public class NoSqlIndexPlugin implements IndexerInterface {
                     }
                 });
 
-        this.databaseInterface.createIndexes();
+        this.databaseMiddleware.createIndexes();
         return task;
     }
 
@@ -201,7 +201,7 @@ public class NoSqlIndexPlugin implements IndexerInterface {
      */
     @Override
     public boolean unindex(URI uri) {
-        long documentsDeleted = databaseInterface.removeEntriesBasedOn("URI", uri.toString());
+        long documentsDeleted = databaseMiddleware.removeEntriesBasedOn("URI", uri.toString());
         logger.info("Unindexed {} documents successfully.", documentsDeleted);
         return documentsDeleted >= 0;
     }
@@ -263,10 +263,10 @@ public class NoSqlIndexPlugin implements IndexerInterface {
     /**
      * Sets the database interface after the plugin is initialized
      *
-     * @param databaseInterface Database interface to set
+     * @param databaseMiddleware Database interface to set
      */
-    public void setDatabaseInterface(DatabaseInterface databaseInterface) {
-        this.databaseInterface = databaseInterface;
-        this.queryPlugin = new NoSqlQueryPlugin(this.databaseInterface);
+    public void setDatabaseInterface(DatabaseMiddleware databaseMiddleware) {
+        this.databaseMiddleware = databaseMiddleware;
+        this.queryPlugin = new NoSqlQueryPlugin(this.databaseMiddleware);
     }
 }
