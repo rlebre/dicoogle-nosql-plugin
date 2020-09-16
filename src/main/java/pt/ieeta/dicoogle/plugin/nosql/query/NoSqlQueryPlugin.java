@@ -2,7 +2,8 @@ package pt.ieeta.dicoogle.plugin.nosql.query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
+import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseMiddleware;
+import pt.ieeta.dicoogle.plugin.nosql.database.MongoUtil;
 import pt.ua.dicoogle.sdk.QueryInterface;
 import pt.ua.dicoogle.sdk.datastructs.SearchResult;
 import pt.ua.dicoogle.sdk.settings.ConfigurationHolder;
@@ -23,11 +24,11 @@ public class NoSqlQueryPlugin implements QueryInterface {
     private static final Pattern pattern = Pattern.compile("([a-zA-Z_0-9]*:(Float|Numeric):)+");
     private boolean enabled;
     private ConfigurationHolder settings;
-    private DatabaseInterface databaseInterface;
+    private DatabaseMiddleware databaseMiddleware;
 
-    public NoSqlQueryPlugin(DatabaseInterface databaseInterface) {
+    public NoSqlQueryPlugin(DatabaseMiddleware databaseMiddleware) {
         this.enabled = true;
-        this.databaseInterface = databaseInterface;
+        this.databaseMiddleware = databaseMiddleware;
     }
 
     public static Map<String, Object> getDefaultExtraFields() {
@@ -40,7 +41,7 @@ public class NoSqlQueryPlugin implements QueryInterface {
 
     @Override
     public Iterable<SearchResult> query(String query, Object... parameters) {
-        if (this.databaseInterface == null) {
+        if (this.databaseMiddleware == null) {
             logger.warn("Query was attempted before settings were initialized");
             return Collections.EMPTY_LIST;
         }
@@ -65,7 +66,7 @@ public class NoSqlQueryPlugin implements QueryInterface {
 
         for (String term : terms) {
             String[] tagValue = term.split(":");
-            result.addAll(this.databaseInterface.find(tagValue[0], tagValue[1], extrafields));
+            result.addAll(this.databaseMiddleware.find(MongoUtil.parseStringToQuery(query), extrafields));
         }
 
         for (HashMap<String, Object> map : result) {
@@ -74,7 +75,7 @@ public class NoSqlQueryPlugin implements QueryInterface {
         }
 
         long stopTime = System.currentTimeMillis();
-        logger.info("Finished opening result stream, Query: {},{},{}", results.size(), (stopTime - startTime), query);
+        logger.info("Finished opening result stream, Query size: {}, Elapsed: {} ms, Query: {}", results.size(), (stopTime - startTime), query);
 
         return results;
     }
@@ -119,9 +120,9 @@ public class NoSqlQueryPlugin implements QueryInterface {
     /**
      * Sets the database interface after the plugin is initialized
      *
-     * @param databaseInterface Database interface to set
+     * @param databaseMiddleware Database interface to set
      */
-    public void setDatabaseInterface(DatabaseInterface databaseInterface) {
-        this.databaseInterface = databaseInterface;
+    public void setDatabaseInterface(DatabaseMiddleware databaseMiddleware) {
+        this.databaseMiddleware = databaseMiddleware;
     }
 }
