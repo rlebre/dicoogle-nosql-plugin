@@ -21,14 +21,17 @@ public class DicomObjAux {
     private Map<Integer, String> tagsDicom;
     private Field[] tags;
 
-    /**
-     * Construtor
-     */
-    public DicomObjAux() {
+
+    public static DicomObjAux getInstance() {
+        return instance;
+    }
+
+    private static final DicomObjAux instance = new DicomObjAux();
+
+    private DicomObjAux() {
         this.tagsDicom = new HashMap<>();
         this.tags = Tag.class.getFields();
     }
-
 
     /**
      * Obtém todas as tags possíveis que um DicomObject pode ter
@@ -39,9 +42,9 @@ public class DicomObjAux {
             try {
                 this.tagsDicom.put(tags[i].getInt(null), tags[i].getName());
             } catch (IllegalAccessException ex) {
-                Logger.getLogger(DatabaseInterface.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatabaseMiddleware.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IllegalArgumentException ex) {
-                Logger.getLogger(DatabaseInterface.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatabaseMiddleware.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -67,12 +70,16 @@ public class DicomObjAux {
                 }
             } catch (UnsupportedOperationException ex) {
                 System.out.println("[ERROR ON] TAG: " + tagName);
-                Logger.getLogger(DatabaseInterface.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DatabaseMiddleware.class.getName()).log(Level.SEVERE, null, ex);
             }
 
 
         }
 
         return dcmObjMap;
+    }
+
+    public String tagName(int tag) {
+        return this.tagsDicom.get(tag);
     }
 }
