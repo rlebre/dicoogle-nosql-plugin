@@ -25,7 +25,7 @@ import static com.mongodb.client.model.Filters.eq;
  * @author Ana Almeida
  * @author Francisco Oliveira
  */
-public class DatabaseInterface {
+public class DatabaseMiddleware {
     private MongoClient mongo;
     private MongoDatabase database;
     private MongoCollection<Document> collection;
@@ -38,7 +38,7 @@ public class DatabaseInterface {
      * @param dbName
      * @param collectionName
      */
-    public DatabaseInterface(String host, int port, String dbName, String collectionName) {
+    public DatabaseMiddleware(String host, int port, String dbName, String collectionName) {
         this.mongo = new MongoClient(host, port);
         this.database = mongo.getDatabase(dbName);
         this.collection = database.getCollection(collectionName);
@@ -49,13 +49,8 @@ public class DatabaseInterface {
      *
      * @param dicomMap HashMap to insert
      */
-    public void insertDicomObjMap(HashMap<String, String> dicomMap) {
-        Document document = new Document();
-
-        for (Map.Entry<String, String> entry : dicomMap.entrySet()) {
-            document.append(entry.getKey(), entry.getValue());
-        }
-
+    public void insertDicomObjMap(Map<String, Object> dicomMap) {
+        Document document = new Document(dicomMap);
         this.collection.insertOne(document);
     }
 
@@ -78,6 +73,33 @@ public class DatabaseInterface {
 
         return results;
     }
+
+    public List<HashMap<String, Object>> find(Document query, Map<String, Object> extrafields) {
+        FindIterable<Document> iterable = this.collection.find(query);
+
+        List<HashMap<String, Object>> results = new ArrayList<>();
+
+        for (Document document : iterable) {
+            document.remove("_id");
+
+            Iterator it = extrafields.entrySet().iterator();
+            HashMap<String, Object> map = new HashMap<>();
+
+            if (it.hasNext()) {
+                map.put("URI", document.get("URI"));
+            }
+
+            while (it.hasNext()) {
+                Map.Entry<String, Object> pair = (Map.Entry) it.next();
+                map.put(pair.getKey(), document.get(pair.getValue()));
+            }
+
+            results.add(map);
+        }
+
+        return results;
+    }
+
 
     public List<HashMap<String, Object>> find(String tag, String value, Map<String, Object> extrafields) {
         Document doc = new Document();

@@ -5,7 +5,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseInterface;
+import pt.ieeta.dicoogle.plugin.nosql.database.DatabaseMiddleware;
 import pt.ieeta.dicoogle.plugin.nosql.index.NoSqlIndexPlugin;
 import pt.ieeta.dicoogle.plugin.nosql.query.NoSqlQueryPlugin;
 import pt.ua.dicoogle.sdk.PluginBase;
@@ -37,16 +37,16 @@ public class NoSqlPluginSet extends PluginBase {
     private int port;
     private String dbName;
     private String collectionName;
-    private DatabaseInterface databaseInterface;
+    private DatabaseMiddleware databaseMiddleware;
 
 
     public NoSqlPluginSet() {
         logger.info("Initializing Distributed NoSql Plugin Set");
 
         NoSqlSettings defaultSettings = NoSqlSettings.getInstance();
-        this.databaseInterface = new DatabaseInterface(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName());
-        this.query = new NoSqlQueryPlugin(databaseInterface);
-        this.json = new NoSqlIndexPlugin(databaseInterface);
+        this.databaseMiddleware = new DatabaseMiddleware(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName());
+        this.query = new NoSqlQueryPlugin(databaseMiddleware);
+        this.json = new NoSqlIndexPlugin(databaseMiddleware);
 
         this.queryPlugins.add(this.query);
         this.indexPlugins.add(this.json);
@@ -95,9 +95,9 @@ public class NoSqlPluginSet extends PluginBase {
         cnf.setProperty("dbName", this.dbName);
         cnf.setProperty("collectionName", this.collectionName);
 
-        this.databaseInterface = new DatabaseInterface(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName());
-        this.query.setDatabaseInterface(this.databaseInterface);
-        this.json.setDatabaseInterface(this.databaseInterface);
+        this.databaseMiddleware = new DatabaseMiddleware(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName());
+        this.query.setDatabaseInterface(this.databaseMiddleware);
+        this.json.setDatabaseInterface(this.databaseMiddleware);
 
         try {
             cnf.save();
