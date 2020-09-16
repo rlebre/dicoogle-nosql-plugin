@@ -46,28 +46,18 @@ public class NoSqlQueryPlugin implements QueryInterface {
             return Collections.EMPTY_LIST;
         }
 
-        query = query.replace("Float:", "");
-        query = query.replace("Numeric:", "");
-        query = query.replaceAll("\"", "");
-        query = query.replaceAll("\\(", "").replaceAll("\\)", "");
-
-        // TODO: Support complex queries with OR and AND
-        String[] terms = query.split("OR |AND ");
-
         List<SearchResult> results = new ArrayList<>();
 
         List<HashMap<String, Object>> result = new ArrayList<>();
-        Map<String, Object> extrafields = getDefaultExtraFields();
+        Map<String, Object> extraFields = getDefaultExtraFields();
+
         long startTime = System.currentTimeMillis();
 
         if (parameters.length > 0) {
-            extrafields = (HashMap<String, Object>) parameters[0];
+            extraFields = (HashMap<String, Object>) parameters[0];
         }
 
-        for (String term : terms) {
-            String[] tagValue = term.split(":");
-            result.addAll(this.databaseMiddleware.find(MongoUtil.parseStringToQuery(query), extrafields));
-        }
+        result.addAll(this.databaseMiddleware.find(MongoUtil.parseStringToQuery(query), extraFields));
 
         for (HashMap<String, Object> map : result) {
             SearchResult r = new SearchResult(URI.create((String) map.get("URI")), 1, map);

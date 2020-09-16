@@ -112,13 +112,15 @@ public class MongoUtil {
             query = madeQueryIsBetween(field, lowObj, highObj, isInclusiveBetween);
             return query;
         }
-        try {
+        /*try {
             obj = Double.parseDouble(str);
             query = madeQueryIsValue(field, obj, isNot);
         } catch (NumberFormatException e) {
             obj = str;
             query = madeQueryIsValueRegexInsensitive(field, obj, isNot);
-        }
+        }*/
+        query = madeQueryIsValueRegexInsensitive(field, str, isNot);
+
         return query;
     }
 
