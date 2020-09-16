@@ -51,20 +51,19 @@ public class NoSqlQueryPlugin implements QueryInterface {
         List<HashMap<String, Object>> result = new ArrayList<>();
         Map<String, Object> extraFields = getDefaultExtraFields();
 
-        long startTime = System.currentTimeMillis();
-
         if (parameters.length > 0) {
             extraFields = (HashMap<String, Object>) parameters[0];
         }
 
+        long startTime = System.currentTimeMillis();
         result.addAll(this.databaseMiddleware.find(MongoUtil.parseStringToQuery(query), extraFields));
+        long stopTime = System.currentTimeMillis();
 
         for (HashMap<String, Object> map : result) {
             SearchResult r = new SearchResult(URI.create((String) map.get("URI")), 1, map);
             results.add(r);
         }
 
-        long stopTime = System.currentTimeMillis();
         logger.info("Finished opening result stream, Query size: {}, Elapsed: {} ms, Query: {}", results.size(), (stopTime - startTime), query);
 
         return results;

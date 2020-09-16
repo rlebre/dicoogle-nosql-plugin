@@ -1,13 +1,8 @@
 package pt.ieeta.dicoogle.plugin.nosql.database;
 
 import org.bson.Document;
-import org.dcm4che2.data.Tag;
-import pt.ua.dicoogle.sdk.datastructs.SearchResult;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -15,36 +10,6 @@ import java.util.List;
  * @author Louis
  */
 public class MongoUtil {
-
-    public static List<SearchResult> getListFromResult(List<Document> dbObjs, URI location, float score) {
-        ArrayList<SearchResult> result = new ArrayList<SearchResult>();
-        String strSOPUID = DicomObjAux.getInstance().tagName(Tag.SOPInstanceUID);
-        for (int i = 0; i < dbObjs.size(); i++) {
-            SearchResult searchResult;
-            if (dbObjs.get(i).get(strSOPUID) != null) {
-                String str = location.toString() + dbObjs.get(i).get(strSOPUID);
-                URI uri = null;
-                try {
-                    uri = new URI(str);
-                } catch (URISyntaxException e) {
-                    uri = location;
-                }
-                HashMap<String, Object> map = new HashMap<String, Object>();
-                HashMap<String, Object> mapTemp = (HashMap<String, Object>) dbObjs.get(i).values();
-                for (String mapKey : mapTemp.keySet()) {
-                    if (mapTemp.get(mapKey) == null) {
-                        map.put(mapKey, mapTemp.get(mapKey));
-                    } else {
-                        map.put(mapKey, mapTemp.get(mapKey).toString());
-                    }
-                }
-                searchResult = new SearchResult(uri, score, map);
-                result.add(searchResult);
-            }
-        }
-        return result;
-    }
-
     private static Document decodeStringToQuery(String strQuery) {
         Document query;
         Object obj, lowObj, highObj;
@@ -246,17 +211,6 @@ public class MongoUtil {
 
     private static Document madeQueryFindAll() {
         Document query = new Document();
-        return query;
-    }
-
-    private static Document madeQueryIsValue(String field, Object value, boolean isNot) {
-        Document query = new Document();
-        String str = field;
-        if (!isNot) {
-            query.put(str, value);
-        } else {
-            query.put(str, new Document("$ne", value));
-        }
         return query;
     }
 

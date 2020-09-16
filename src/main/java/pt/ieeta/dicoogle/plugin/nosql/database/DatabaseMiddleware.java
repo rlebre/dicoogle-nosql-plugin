@@ -10,6 +10,8 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pt.ua.dicoogle.sdk.utils.TagValue;
 import pt.ua.dicoogle.sdk.utils.TagsStruct;
 
@@ -26,6 +28,8 @@ import static com.mongodb.client.model.Filters.eq;
  * @author Francisco Oliveira
  */
 public class DatabaseMiddleware {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseMiddleware.class);
+
     private MongoClient mongo;
     private MongoDatabase database;
     private MongoCollection<Document> collection;
