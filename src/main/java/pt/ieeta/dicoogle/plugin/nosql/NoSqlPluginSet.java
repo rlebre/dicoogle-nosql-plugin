@@ -37,6 +37,8 @@ public class NoSqlPluginSet extends PluginBase {
     private int port;
     private String dbName;
     private String collectionName;
+    private String dbUser;
+    private String dbPassword;
     private DatabaseMiddleware databaseMiddleware;
 
 
@@ -44,7 +46,7 @@ public class NoSqlPluginSet extends PluginBase {
         logger.info("Initializing Distributed NoSql Plugin Set");
 
         NoSqlSettings defaultSettings = NoSqlSettings.getInstance();
-        this.databaseMiddleware = new DatabaseMiddleware(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName());
+        this.databaseMiddleware = new DatabaseMiddleware(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName(), defaultSettings.getDbUser(), defaultSettings.getDbPassword());
         this.query = new NoSqlQueryPlugin(databaseMiddleware);
         this.json = new NoSqlIndexPlugin(databaseMiddleware);
 
@@ -84,18 +86,24 @@ public class NoSqlPluginSet extends PluginBase {
         this.port = cnf.getInt("port", defaultSettings.getPort());
         this.dbName = cnf.getString("dbName", defaultSettings.getDbName());
         this.collectionName = cnf.getString("collectionName", defaultSettings.getCollectionName());
+        this.dbUser = cnf.getString("dbUser", defaultSettings.getDbUser());
+        this.dbPassword = cnf.getString("dbPassword", defaultSettings.getDbPassword());
 
         defaultSettings.setHost(this.host);
         defaultSettings.setPort(this.port);
         defaultSettings.setDbName(this.dbName);
         defaultSettings.setCollectionName(this.collectionName);
+        defaultSettings.setDbUser(this.dbUser);
+        defaultSettings.setDbPassword(this.dbUser);
 
         cnf.setProperty("host", this.host);
         cnf.setProperty("port", this.port);
         cnf.setProperty("dbName", this.dbName);
         cnf.setProperty("collectionName", this.collectionName);
+        cnf.setProperty("dbUser", this.dbUser);
+        cnf.setProperty("dbPassword", this.dbPassword);
 
-        this.databaseMiddleware = new DatabaseMiddleware(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName());
+        this.databaseMiddleware = new DatabaseMiddleware(defaultSettings.getHost(), defaultSettings.getPort(), defaultSettings.getDbName(), defaultSettings.getCollectionName(), defaultSettings.getDbUser(), defaultSettings.getDbPassword());
         this.query.setDatabaseInterface(this.databaseMiddleware);
         this.json.setDatabaseInterface(this.databaseMiddleware);
 

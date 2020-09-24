@@ -1,10 +1,10 @@
 package pt.ieeta.dicoogle.plugin.nosql.database;
 
-import com.mongodb.MongoClient;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoClient;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import com.mongodb.client.*;
 import com.mongodb.client.model.Accumulators;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Indexes;
@@ -42,8 +42,18 @@ public class DatabaseMiddleware {
      * @param dbName
      * @param collectionName
      */
-    public DatabaseMiddleware(String host, int port, String dbName, String collectionName) {
-        this.mongo = new MongoClient(host, port);
+    public DatabaseMiddleware(String host, int port, String dbName, String collectionName, String user, String password) {
+        List<ServerAddress> seeds = new ArrayList<>();
+
+        MongoCredential credential = MongoCredential.createCredential(user, "admin", password.toCharArray());
+        seeds.add(new ServerAddress(host, port));
+
+        this.mongo = MongoClients.create(
+                MongoClientSettings.builder()
+                        .applyToClusterSettings(builder ->
+                                builder.hosts(seeds))
+                        .credential(credential)
+                        .build());
         this.database = mongo.getDatabase(dbName);
         this.collection = database.getCollection(collectionName);
     }

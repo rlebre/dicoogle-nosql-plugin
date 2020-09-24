@@ -66,10 +66,14 @@ port, database name and database collection. Example:
     `cd ~/dicom-dataset`
 3.  Run the following command to recursively find every file ending with `.dcm`
     and using `dcmtk`toolkit, sending via C-STORE to Dicoogle.
-    `shell script dcmsend -aec DICOOGLE-STORAGE localhost 6666 $(find . -name '*.dcm' -print) `
+    ```shell script
+    dcmsend -aec DICOOGLE-STORAGE localhost 6666 $(find . -name '*.dcm' -print)
+    ```
     Alternatively, you can skip the step 1. and run the following command, replacing
     \<dir\> with the directory path to your DICOM dataset folder.
-    `shell script dcmsend -aec DICOOGLE-STORAGE localhost 6666 $(find <dir> -name '*.dcm' -print) `
+    ```shell script
+    dcmsend -aec DICOOGLE-STORAGE localhost 6666 $(find <dir> -name '*.dcm' -print) 
+    ```
 
 ## TODO List
 

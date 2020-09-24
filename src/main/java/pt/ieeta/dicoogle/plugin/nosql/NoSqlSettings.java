@@ -11,6 +11,8 @@ public class NoSqlSettings {
     private int port = 27017;
     private String dbName = "DicoogleDatabase";
     private String collectionName = "DicoogleObjs";
+    private String dbUser = "dicoogle";
+    private String dbPassword = "dicoogle";
 
     public static NoSqlSettings getInstance() {
         if (instance == null)
@@ -49,5 +51,21 @@ public class NoSqlSettings {
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
+    }
+
+    public String getDbUser() {
+        return dbUser;
+    }
+
+    public void setDbUser(String dbUser) {
+        this.dbUser = dbUser;
+    }
+
+    public String getDbPassword() {
+        return dbPassword;
+    }
+
+    public void setDbPassword(String dbPassword) {
+        this.dbPassword = dbPassword;
     }
 }
